@@ -23,7 +23,7 @@ def windows(data, window_size):
 import glob
 
 list_of_fn = meta.iloc[:,0]
-def extract_features(directory, list_of_fn, file_ext="*.wav", bands = 60, frames = 41, meta):
+def extract_features(directory, meta, list_of_fn, file_ext="*.wav", bands = 60, frames = 41):
     window_size = 512 * (frames - 1)
     log_specgrams = []
     labels = []
@@ -46,12 +46,18 @@ def extract_features(directory, list_of_fn, file_ext="*.wav", bands = 60, frames
     for i in range(len(features)):
         features[i, :, :, 1] = librosa.feature.delta(features[i, :, :, 0])
     
-    return np.array(features), np.array(labels)
+    return np.array(features), np.array(labels, dtype = np.int)
+
+def one_hot_encode(labels):
+    n_labels = len(labels)
+    n_unique_labels = len(np.unique(labels))
+    one_hot_encode = np.zeros((n_labels,n_unique_labels))
+    one_hot_encode[np.arange(n_labels), labels] = 1
+    return one_hot_encode
 
 
-
-
-
+tr_features,tr_labels = extract_features(directory, meta, list_of_fn)
+tr_labels = one_hot_encode(tr_labels)
 
 
 
