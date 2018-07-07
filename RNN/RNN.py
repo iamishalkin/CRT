@@ -84,7 +84,26 @@ model.fit_generator(train_generator(directory, x_train, y, bands = 60),
                     callbacks=[saveBestModel],
                     steps_per_epoch=10, epochs=100, verbose=1, validation_steps=10)
 
+"""
+from keras.models import model_from_json
+# serialize model to JSON
+model_json = model.to_json()
+with open("C:/CRT/git/CRT/RNN/model.json", "w") as json_file:
+    json_file.write(model_json)
+# serialize weights to HDF5
+model.save_weights("C:/CRT/git/CRT/RNN/model.h5")
+print("Saved model to disk")
 
+
+# load json and create model
+json_file = open('C:/CRT/git/CRT/RNN/model.json', 'r')
+loaded_model_json = json_file.read()
+json_file.close()
+loaded_model = model_from_json(loaded_model_json)
+# load weights into new model
+loaded_model.load_weights("C:/CRT/git/CRT/RNN/model.h5")
+print("Loaded model from disk")
+"""
 #tr_features = extract_features(directory, list_of_fn[0:3])
 test_directory = 'C:/CRT/data_v_7_stc/test/'
 filenames = [i.decode("utf-8") for i in os.listdir(os.fsencode(test_directory))]
@@ -111,3 +130,13 @@ def test_generator(directory, list_of_fn, bands = 60):
         yield features
         
 predict = model.predict_generator(test_generator(test_directory, filenames, bands = 60), steps=len(filenames))
+
+pred = pd.DataFrame(predict).copy(deep=True)
+
+result = pd.DataFrame(filenames)
+result.loc[:, 1] = pred.max(axis=1) 
+result.loc[:, 2] = lb.inverse_transform(pred.idxmax(axis=1))
+
+result.to_csv('C:/CRT/git/CRT/RNN/first_result.txt', sep='\t', header=False, index=False)
+
+
