@@ -58,7 +58,7 @@ def train_generator(directory, list_of_fn, y, bands = 60):
 
 
 from keras.models import Sequential
-from keras.layers import LSTM, Dense
+from keras.layers import LSTM, Dense, Dropout
 from keras.utils import to_categorical
 from keras.callbacks import ModelCheckpoint 
 from sklearn import metrics
@@ -67,8 +67,11 @@ from keras.optimizers import Adam
 model = Sequential()
 
 model.add(LSTM(128, return_sequences=True, input_shape=(None, 120)))
+model.add(Dropout(0.2))
 model.add(LSTM(64, return_sequences=True))
+model.add(Dropout(0.2))
 model.add(LSTM(32, return_sequences=True))
+model.add(Dropout(0.2))
 model.add(LSTM(16))
 model.add(Dense(8, activation='softmax'))
 
