@@ -87,7 +87,7 @@ saveBestModel = ModelCheckpoint("best.kerasModelWeights",
 model.fit_generator(train_generator(directory, x_train, y, bands = 60), 
                     validation_data=train_generator(directory, x_test, y, bands = 60),
                     callbacks=[saveBestModel],
-                    steps_per_epoch=20, epochs=1000, verbose=1, validation_steps=20)
+                    steps_per_epoch=20, epochs=100, verbose=1, validation_steps=20)
 
 
 
