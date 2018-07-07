@@ -25,23 +25,8 @@ def windows(data, window_size):
 
 list_of_fn = meta.iloc[:,0].tolist()
 
-def extract_features(directory, list_of_fn, bands = 60, frames = 41):
-    window_size = 512 * (frames - 1)
-    mfccs = []
-    
-    for fn in tqdm(list_of_fn, desc="extract features"):
-        path = directory + fn
-        sound_clip,s = librosa.load(path)
-        for (start,end) in windows(sound_clip,window_size):
-            end = int(end)
-            start = int(start)
-            if(len(sound_clip[start:end]) == window_size):
-                signal = sound_clip[start:end]
-                mfcc = librosa.feature.mfcc(y=signal, sr=s, n_mfcc = bands).T.flatten()[:, np.newaxis].T
-                mfccs.append(mfcc)
-        
-    features = np.asarray(mfccs).reshape(len(mfccs),frames,bands)
-    return np.array(features)
+from sklearn.cross_validation import train_test_split
+x_train ,x_test = train_test_split(list_of_fn,test_size=0.2)
 
 from sklearn.preprocessing import LabelEncoder
 from keras.utils import np_utils
@@ -72,7 +57,7 @@ def train_generator(directory, list_of_fn, y, bands = 60):
 
 
 from keras.models import Sequential
-from keras.layers import LSTM, Dense, TimeDistributed
+from keras.layers import LSTM, Dense
 from keras.utils import to_categorical
 
 model = Sequential()
@@ -86,7 +71,9 @@ print(model.summary(90))
 model.compile(loss='categorical_crossentropy',
               optimizer='adam')
     
-model.fit_generator(train_generator(directory, list_of_fn, y, bands = 60), steps_per_epoch=1, epochs=2, verbose=1)
+model.fit_generator(train_generator(directory, x_train, y, bands = 60), 
+                    validation_data=train_generator(directory, x_test, y, bands = 60), 
+                    steps_per_epoch=4, epochs=5, verbose=1, validation_steps=4)
 
 
 #tr_features = extract_features(directory, list_of_fn[0:3])
