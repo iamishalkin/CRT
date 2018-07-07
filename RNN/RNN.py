@@ -10,9 +10,10 @@ Created on Thu Jul  5 14:59:32 2018
 import os
 import numpy as np
 import pandas as pd
-#import re
+from random import shuffle
+import random
+random.seed(42)
 import librosa
-from tqdm import tqdm
 meta = pd.read_csv('C:/CRT/data_v_7_stc/meta/meta.txt', sep='\t', header=None)
 
 directory = 'C:/CRT/data_v_7_stc/audio/'
@@ -24,7 +25,7 @@ def windows(data, window_size):
         start += (window_size / 2)
 
 list_of_fn = meta.iloc[:,0].tolist()
-
+shuffle(list_of_fn)
 from sklearn.cross_validation import train_test_split
 x_train ,x_test = train_test_split(list_of_fn,test_size=0.2)
 
@@ -59,21 +60,29 @@ def train_generator(directory, list_of_fn, y, bands = 60):
 from keras.models import Sequential
 from keras.layers import LSTM, Dense
 from keras.utils import to_categorical
+from keras.callbacks import ModelCheckpoint 
+from sklearn import metrics
+from keras.optimizers import Adam
 
 model = Sequential()
 
 model.add(LSTM(32, return_sequences=True, input_shape=(None, 120)))
-model.add(LSTM(8))
+model.add(LSTM(16))
 model.add(Dense(8, activation='softmax'))
 
 print(model.summary(90))
 
 model.compile(loss='categorical_crossentropy',
-              optimizer='adam')
-    
+              optimizer='adam',
+              metrics=['accuracy'])
+
+saveBestModel = ModelCheckpoint("best.kerasModelWeights",
+                                monitor='val_acc', verbose=1, save_best_only=True, save_weights_only=True)
+
 model.fit_generator(train_generator(directory, x_train, y, bands = 60), 
-                    validation_data=train_generator(directory, x_test, y, bands = 60), 
-                    steps_per_epoch=4, epochs=5, verbose=1, validation_steps=4)
+                    validation_data=train_generator(directory, x_test, y, bands = 60),
+                    callbacks=[saveBestModel],
+                    steps_per_epoch=10, epochs=100, verbose=1, validation_steps=20)
 
 
 #tr_features = extract_features(directory, list_of_fn[0:3])
