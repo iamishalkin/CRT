@@ -68,12 +68,7 @@ def train_generator(directory, list_of_fn, y, bands = 60):
         y_resh = np.asarray(y[meta.iloc[:,0].tolist().index(fn)]).reshape(1, 8)
         yield features, y_resh
 
-gen = train_generator(directory, list_of_fn[0:3], y, bands = 60)
-next(gen)
-for i in train_generator(directory, list_of_fn[0:2], y, bands = 60):
-    a,b = i
-    print(a.shape)
-    print(b.shape)
+
 
 
 from keras.models import Sequential
@@ -91,35 +86,19 @@ print(model.summary(90))
 model.compile(loss='categorical_crossentropy',
               optimizer='adam')
     
-model.fit_generator(train_generator(directory, list_of_fn[0:3], y, bands = 60), steps_per_epoch=30, epochs=1, verbose=1)
+model.fit_generator(train_generator(directory, list_of_fn, y, bands = 60), steps_per_epoch=1, epochs=2, verbose=1)
 
 
-tr_features = extract_features(directory, list_of_fn[0:3])
+#tr_features = extract_features(directory, list_of_fn[0:3])
 test_directory = 'C:/CRT/data_v_7_stc/test/'
 filenames = [i.decode("utf-8") for i in os.listdir(os.fsencode(test_directory))]
-test = extract_features(test_directory, list_of_fn)
+#test = extract_features(test_directory, list_of_fn)
 
-from keras.models import Sequential
-from keras.layers import LSTM, Dense, TimeDistributed
-from keras.utils import to_categorical
-
-model = Sequential()
-
-model.add(LSTM(32, return_sequences=True, input_shape=(None, 5)))
-model.add(LSTM(8, return_sequences=True))
-model.add(TimeDistributed(Dense(2, activation='sigmoid')))
-
-print(model.summary(90))
-
-model.compile(loss='categorical_crossentropy',
-              optimizer='adam')
-
-list_of_fn = meta.iloc[:,0].tolist()
-y_list = meta.iloc[:, 4].tolist()
-def train_generator(list_of_fn, y_list):
-    window_size = 512 * (frames - 1)
-    mfccs = []
+def test_generator(directory, list_of_fn, bands = 60):
+    window_size = 512
+    
     for fn in list_of_fn:
+        mfccs = []
         path = directory + fn
         sound_clip,s = librosa.load(path)
         for (start,end) in windows(sound_clip,window_size):
@@ -128,7 +107,11 @@ def train_generator(list_of_fn, y_list):
             if(len(sound_clip[start:end]) == window_size):
                 signal = sound_clip[start:end]
                 mfcc = librosa.feature.mfcc(y=signal, sr=s, n_mfcc = bands).T.flatten()[:, np.newaxis].T
+                mfccs.append(mfcc)
+    
+        features = np.asarray(mfccs).reshape(1, len(mfccs),bands*2)
+        #print(len(mfccs))
         
-        yield x_train, y_train
-
-model.fit_generator(train_generator(), steps_per_epoch=30, epochs=10, verbose=1)
+        yield features
+        
+predict = model.predict_generator(test_generator(test_directory, filenames, bands = 60), steps=len(filenames))
