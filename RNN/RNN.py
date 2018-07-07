@@ -66,7 +66,9 @@ from keras.optimizers import Adam
 
 model = Sequential()
 
-model.add(LSTM(32, return_sequences=True, input_shape=(None, 120)))
+model.add(LSTM(128, return_sequences=True, input_shape=(None, 120)))
+model.add(LSTM(64, return_sequences=True))
+model.add(LSTM(32, return_sequences=True))
 model.add(LSTM(16))
 model.add(Dense(8, activation='softmax'))
 
@@ -82,10 +84,10 @@ saveBestModel = ModelCheckpoint("best.kerasModelWeights",
 model.fit_generator(train_generator(directory, x_train, y, bands = 60), 
                     validation_data=train_generator(directory, x_test, y, bands = 60),
                     callbacks=[saveBestModel],
-                    steps_per_epoch=10, epochs=100, verbose=1, validation_steps=10)
+                    steps_per_epoch=20, epochs=1000, verbose=1, validation_steps=20)
 
-"""
-from keras.models import model_from_json
+
+
 # serialize model to JSON
 model_json = model.to_json()
 with open("C:/CRT/git/CRT/RNN/model.json", "w") as json_file:
@@ -94,7 +96,8 @@ with open("C:/CRT/git/CRT/RNN/model.json", "w") as json_file:
 model.save_weights("C:/CRT/git/CRT/RNN/model.h5")
 print("Saved model to disk")
 
-
+"""
+from keras.models import model_from_json
 # load json and create model
 json_file = open('C:/CRT/git/CRT/RNN/model.json', 'r')
 loaded_model_json = json_file.read()
