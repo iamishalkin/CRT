@@ -39,7 +39,11 @@ def calc_features(data):
 
         rm_list = []
         for sample in clip.data_samples:
-            pass
+            landmarks = get_keypoints(sample.landmarks)
+            image = sample.image
+            image_features = sift.compute(image, landmarks)[1]
+            feat.append(image_features)
+            targets.append(sample.labels)
 
             # TODO: придумайте способы вычисления признаков по изображению с использованием ключевых точек
             # используйте библиотеку OpenCV
@@ -52,8 +56,9 @@ def calc_features(data):
 
 def classification(X_train, X_test, y_train, y_test, accuracy_fn, pca_dim):
     if pca_dim > 0:
-        pass
-        # TODO: выполните сокращение размерности признаков с использованием PCA
+        pca_model = PCA(n_components=min(pca_dim, X_train.shape[1])).fit(X_train)
+        X_train = pca_model.transform(X_train)
+        X_test = pca_model.transform(X_test)
 
     # shuffle
     combined = list(zip(X_train, y_train))
@@ -61,8 +66,10 @@ def classification(X_train, X_test, y_train, y_test, accuracy_fn, pca_dim):
     X_train[:], y_train[:] = zip(*combined)
 
     # TODO: используйте классификаторы из sklearn
+    model = RandomForestClassifier(n_estimators=50, random_state=seed)
+    model.fit(X_train,y_train)
 
-    y_pred = []
+    y_pred = model.predict(X_test)
     accuracy_fn.by_frames(y_pred)
     accuracy_fn.by_clips(y_pred)
 
@@ -75,10 +82,10 @@ if __name__ == "__main__":
     # dataset dir
     base_dir = '/home/ivan/STC'
     if 0:
-        train_dataset_root = base_dir + '/Ryerson/Speech/Video'
-        train_file_list = base_dir + '/Ryerson/Speech/train_data_with_landmarks.txt'
-        test_dataset_root = base_dir + '/Ryerson/Speech/Video'
-        test_file_list = base_dir + '/Ryerson/Speech/test_data_with_landmarks.txt'
+        train_dataset_root = base_dir + '/Ryerson/Video'
+        train_file_list = base_dir + '/Ryerson/train_data_with_landmarks.txt'
+        test_dataset_root = base_dir + '/Ryerson/Video'
+        test_file_list = base_dir + '/Ryerson/test_data_with_landmarks.txt'
     elif 1:
         train_dataset_root = base_dir + '/OMGEmotionChallenge-master/omg_TrainVideos/frames'
         train_file_list = base_dir + '/OMGEmotionChallenge-master/omg_TrainVideos/train_data_with_landmarks.txt'

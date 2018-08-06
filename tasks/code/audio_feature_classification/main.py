@@ -65,11 +65,11 @@ def classification(X_train, X_test, y_train, y_test, accuracy_fn, pca_dim=100):
     combined = list(zip(X_train, y_train))
     seed=42
     random.seed(seed)
-    random.shuffle(combined)
+    random.Random(seed).shuffle(combined)
     X_train[:], y_train[:] = zip(*combined)
     
-    #model = RandomForestClassifier(n_estimators=50, random_state=seed)
-    model = LogisticRegression(random_state=seed)
+    model = RandomForestClassifier(n_estimators=50, random_state=seed)
+    #model = LogisticRegression(random_state=seed)
     model.fit(X_train,y_train)
 
     y_pred = model.predict(X_test)
