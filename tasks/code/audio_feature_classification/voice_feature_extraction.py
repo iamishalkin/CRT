@@ -20,19 +20,19 @@ class OpenSMILE():
         if not os.path.exists(self.opensmile_conf):
             raise Exception("Can't find openSMILE config {0}".format(self.opensmile_conf))
 
-        try:
-            command = "ffmpeg -version"
-            output = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT)
-        except subprocess.CalledProcessError:
-            raise Exception("Can't find ffmpeg executable")
-        else:
-            m = re.search('ffmpeg version (.*) Copyright'.encode('utf-8'), output, re.MULTILINE)
-            if m:
-                ffmpeg_version = m.group(1)
-                print('ffmpeg version ', ffmpeg_version)
+        #try:
+        #    command = "ffmpeg -version"
+        #    output = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT)
+        #except subprocess.CalledProcessError:
+        #    raise Exception("Can't find ffmpeg executable")
+        #else:
+        #    m = re.search('ffmpeg version (.*) Copyright'.encode('utf-8'), output, re.MULTILINE)
+        #    if m:
+        #        ffmpeg_version = m.group(1)
+        #        print('ffmpeg version ', ffmpeg_version)
 
         try:
-            command = self.opensmile_dir + "/bin/linux_x64_standalone_static/SMILExtract -h"
+            command = self.opensmile_dir + "/bin/Win32/SMILExtract_Release -h"
             output = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError:
             raise Exception("Can't find SMILExtract executable")
@@ -53,9 +53,7 @@ class OpenSMILE():
         ## example: SMILExtract -I output.wav -C ./openSMILE-2.1.0/config/gemaps/GeMAPSv01a.conf --csvoutput features.csv
         ##----------------------------------------------------------
         features_file = os.path.dirname(wav_path) + '/temp.csv'
-        with open(features_file, "w+") as f:
-            pass
-        command = "{opensmile_dir}/bin/linux_x64_standalone_static/SMILExtract -I {input_file} -C {conf_file} -O {output_file}".format(
+        command = "{opensmile_dir}/bin/Win32/SMILExtract_Release -I {input_file} -C {conf_file} --csvoutput {output_file}".format(
                         opensmile_dir=self.opensmile_dir,
                         input_file=wav_path,
                         conf_file=self.opensmile_conf,
@@ -66,14 +64,9 @@ class OpenSMILE():
         ##----------------------------------------------------------
         ## merge metadata and features
         ##----------------------------------------------------------
-        #features = pd.read_csv(features_file, sep=',', index_col=None, header=None, skiprows=1)
-        features = pd.read_csv(features_file, header=None)
+        features = pd.read_csv(features_file, sep=';', index_col=None)
         ## get rid of useless column
-        #print(features.head())
-        #features.drop('name', axis=1, inplace=True)
-        features.drop(features.columns[0],axis=1,inplace=True)
-        features = features.loc[:,features.loc[0,]!='?']
-        
+        features.drop('name', axis=1, inplace=True)
         ## force the indexes to be equal so they will concat into 1 row. WTF, pandas?
         features = np.transpose(features.as_matrix()[0])
 

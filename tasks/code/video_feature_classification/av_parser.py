@@ -67,7 +67,7 @@ class AVDBParser(AbstractDatasetParser):
             valence_per_clip = []
             arousal_per_clip = []
             for i in progresser:
-                datas = markup_file.readline().replace('\\', '/').strip().split()
+                datas = markup_file.readline().strip().split()
                 im_path = os.path.join(self.dataset_root, datas[0])
                 wav_path = None
                 valence = float(datas[1])

@@ -26,6 +26,7 @@ from shutil import copyfile
 import pprint
 
 
+
 def get_net_params(net, lr, weight_decay):
     # large lr for last fc parameters
     params = []
@@ -335,5 +336,7 @@ def test():
     accuracy_fn.by_clips(predict)
 
 if __name__ == "__main__":
+    torch.cuda.set_device(3)
+    print (torch.cuda.get_device_properties(3))
     train()
     #test()

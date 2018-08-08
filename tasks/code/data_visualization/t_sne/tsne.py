@@ -3,8 +3,6 @@ import torch
 import torch.autograd
 from torch import nn
 
-from scipy.spatial import distance
-
 
 class TSNE(nn.Module):
     def __init__(self, n_points, n_dim):
@@ -18,13 +16,7 @@ class TSNE(nn.Module):
         # TODO: реализуйте вычисление матрицы сходства для точек отображения и расстояние Кульбака-Лейблера
         # pij - значения сходства между точками данных
         # i, j - индексы точек
-        #qij = exp(distance.euclidean(i, j))
-        dist = nn.modules.distance.PairwiseDistance()
-        nominator = -torch.exp(dist(self.logits[i]), dist(self.logits[i]))
-        denominator = torch.sum(torch.exp(dist(self.logits, self.ligits[i]))) -1 
-        qij = nominator / denominator
-        division = torch.div(pij, qij)
-        loss_kld = torch.mul(pij, torch.log(division))
+        loss_kld = None
         return loss_kld.sum()
 
     def __call__(self, *args):

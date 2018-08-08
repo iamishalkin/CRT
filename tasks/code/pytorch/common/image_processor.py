@@ -18,6 +18,13 @@ class TorchImageProcessor:
         """Everything that we need to init"""
         pass
 
+    def trans(self, image):
+        transform_seq = transforms.Compose([transforms.ToPILImage(),
+                                            transforms.RandomRotation(20),
+                                            transforms.RandomVerticalFlip(0.3),
+                                            transforms.ToTensor()])
+        return transform_seq(image)
+
     def process(self, image_path):
         """
         Returns processed data.
@@ -33,4 +40,5 @@ class TorchImageProcessor:
         # TODO: реализуйте процедуры аугментации изображений используя OpenCV и TorchVision
         # на выходе функции ожидается массив numpy с нормированными значениям пикселей
 
-        return image
+        return self.trans(image).numpy()
+        #return image

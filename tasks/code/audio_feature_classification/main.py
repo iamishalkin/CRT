@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 import sys
 import random
 import numpy as np
@@ -9,19 +8,15 @@ import pickle
 sys.path.append('../')
 from pytorch.common.datasets_parsers.av_parser import AVDBParser
 
-
 from sklearn import svm
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble import ExtraTreesClassifier
-from sklearn.linear_model import LogisticRegression
 from sklearn.decomposition import PCA
 
-
+from pytorch.common.datasets_parsers.av_parser import AVDBParser
+from voice_feature_extraction import OpenSMILE
 from accuracy import Accuracy, Accuracy_regression
 
-
-
-from voice_feature_extraction import OpenSMILE
 
 def get_data(dataset_root, file_list, max_num_clips=0):
     dataset_parser = AVDBParser(dataset_root, file_list,
@@ -63,16 +58,12 @@ def classification(X_train, X_test, y_train, y_test, accuracy_fn, pca_dim=100):
 
     # shuffle
     combined = list(zip(X_train, y_train))
-    seed=42
-    random.seed(seed)
-    random.Random(seed).shuffle(combined)
+    random.shuffle(combined)
     X_train[:], y_train[:] = zip(*combined)
-    
-    model = RandomForestClassifier(n_estimators=50, random_state=seed)
-    #model = LogisticRegression(random_state=seed)
-    model.fit(X_train,y_train)
 
-    y_pred = model.predict(X_test)
+    # TODO: используйте классификаторы из sklearn
+
+    y_pred = []
     accuracy_fn.by_clips(y_pred)
 
 
@@ -82,12 +73,12 @@ if __name__ == "__main__":
     use_dump = False # используйте dump для быстрой загрузки рассчитанных фич из файла
 
     # dataset dir
-    base_dir = '/home/ivan/STC'
+    base_dir = 'D:/AVER'
     if 1:
-        train_dataset_root = base_dir + '/Ryerson/Video'
-        train_file_list = base_dir + '/Ryerson/train_data_with_landmarks.txt'
-        test_dataset_root = base_dir + '/Ryerson/Video'
-        test_file_list = base_dir + '/Ryerson/test_data_with_landmarks.txt'
+        train_dataset_root = base_dir + '/Ryerson/Speech/Video'
+        train_file_list = base_dir + '/Ryerson/Speech/train_data_with_landmarks.txt'
+        test_dataset_root = base_dir + '/Ryerson/Speech/Video'
+        test_file_list = base_dir + '/Ryerson/Speech/test_data_with_landmarks.txt'
     elif 1:
         train_dataset_root = base_dir + '/OMGEmotionChallenge-master/omg_TrainVideos/preproc/frames'
         train_file_list = base_dir + '/OMGEmotionChallenge-master/omg_TrainVideos/preproc/train_data_with_landmarks.txt'
@@ -95,9 +86,9 @@ if __name__ == "__main__":
         test_file_list = base_dir + '/OMGEmotionChallenge-master/omg_ValidVideos/preproc/valid_data_with_landmarks.txt'
 
     # opensmile configuration
-    opensmile_root_dir = '/home/ivan/STC/opensmile-2.3.0'
+    opensmile_root_dir = 'C:/AVER/opensmile-2.3.0'
     # TODO: поэкспериментируйте с различными конфигурационными файлами библиотеки OpenSmile
-    opensmile_config_path = '/home/ivan/STC/opensmile-2.3.0/config/ComParE_2016.conf'
+    opensmile_config_path = 'C:/AVER/opensmile-2.3.0/config/avec2013.conf'
 
     if not use_dump:
         # load dataset

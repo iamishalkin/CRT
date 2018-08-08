@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 import os, sys
 import cv2
 import random
@@ -16,8 +15,9 @@ from sklearn.ensemble import ExtraTreesClassifier
 from sklearn.decomposition import PCA
 from accuracy import Accuracy
 
+
 def get_data(dataset_root, file_list, max_num_clips=0, max_num_samples=50):
-    dataset_parser = AVDBParser(dataset_root, file_list,#os.path.join(dataset_root, file_list),
+    dataset_parser = AVDBParser(dataset_root, os.path.join(dataset_root, file_list),
                                 max_num_clips=max_num_clips, max_num_samples=max_num_samples,
                                 ungroup=False, load_image=True)
     data = dataset_parser.get_data()
@@ -39,11 +39,7 @@ def calc_features(data):
 
         rm_list = []
         for sample in clip.data_samples:
-            landmarks = get_keypoints(sample.landmarks)
-            image = sample.image
-            image_features = sift.compute(image, landmarks)[1]
-            feat.append(image_features)
-            targets.append(sample.labels)
+            pass
 
             # TODO: придумайте способы вычисления признаков по изображению с использованием ключевых точек
             # используйте библиотеку OpenCV
@@ -56,9 +52,8 @@ def calc_features(data):
 
 def classification(X_train, X_test, y_train, y_test, accuracy_fn, pca_dim):
     if pca_dim > 0:
-        pca_model = PCA(n_components=min(pca_dim, X_train.shape[1])).fit(X_train)
-        X_train = pca_model.transform(X_train)
-        X_test = pca_model.transform(X_test)
+        pass
+        # TODO: выполните сокращение размерности признаков с использованием PCA
 
     # shuffle
     combined = list(zip(X_train, y_train))
@@ -66,31 +61,29 @@ def classification(X_train, X_test, y_train, y_test, accuracy_fn, pca_dim):
     X_train[:], y_train[:] = zip(*combined)
 
     # TODO: используйте классификаторы из sklearn
-    model = RandomForestClassifier(n_estimators=50, random_state=seed)
-    model.fit(X_train,y_train)
 
-    y_pred = model.predict(X_test)
+    y_pred = []
     accuracy_fn.by_frames(y_pred)
     accuracy_fn.by_clips(y_pred)
 
 
 if __name__ == "__main__":
     experiment_name = 'exp_1'
-    max_num_clips = 1 # загружайте только часть данных для отладки кода
+    max_num_clips = 0 # загружайте только часть данных для отладки кода
     use_dump = False # используйте dump для быстрой загрузки рассчитанных фич из файла
 
     # dataset dir
-    base_dir = '/home/ivan/STC'
-    if 0:
-        train_dataset_root = base_dir + '/Ryerson/Video'
-        train_file_list = base_dir + '/Ryerson/train_data_with_landmarks.txt'
-        test_dataset_root = base_dir + '/Ryerson/Video'
-        test_file_list = base_dir + '/Ryerson/test_data_with_landmarks.txt'
+    base_dir = 'D:/AVER'
+    if 1:
+        train_dataset_root = base_dir + '/Ryerson/Speech/Video'
+        train_file_list = base_dir + '/Ryerson/Speech/train_data_with_landmarks.txt'
+        test_dataset_root = base_dir + '/Ryerson/Speech/Video'
+        test_file_list = base_dir + '/Ryerson/Speech/test_data_with_landmarks.txt'
     elif 1:
-        train_dataset_root = base_dir + '/OMGEmotionChallenge-master/omg_TrainVideos/frames'
-        train_file_list = base_dir + '/OMGEmotionChallenge-master/omg_TrainVideos/train_data_with_landmarks.txt'
-        test_dataset_root =base_dir + '/OMGEmotionChallenge-master/omg_ValidVideos/frames'
-        test_file_list = base_dir + '/OMGEmotionChallenge-master/omg_ValidVideos/valid_data_with_landmarks.txt'
+        train_dataset_root = base_dir + '/OMGEmotionChallenge-master/omg_TrainVideos/preproc/frames'
+        train_file_list = base_dir + '/OMGEmotionChallenge-master/omg_TrainVideos/preproc/train_data_with_landmarks.txt'
+        test_dataset_root =base_dir + '/OMGEmotionChallenge-master/omg_ValidVideos/preproc/frames'
+        test_file_list = base_dir + '/OMGEmotionChallenge-master/omg_ValidVideos/preproc/valid_data_with_landmarks.txt'
 
     if not use_dump:
         # load dataset
@@ -108,7 +101,6 @@ if __name__ == "__main__":
     else:
         with open(experiment_name + '.pickle', 'rb') as f:
             train_feat, train_targets, test_feat, test_targets, accuracy_fn = pickle.load(f)
-"""
+
     # run classifiers
     classification(train_feat, test_feat, train_targets, test_targets, accuracy_fn=accuracy_fn, pca_dim=100)
-"""
